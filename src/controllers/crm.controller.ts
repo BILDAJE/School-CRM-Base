@@ -17,6 +17,8 @@ export class CRMController {
         { id: 2, nombre: "María López", rol: "profesor", activo: true },
         { id: 3, nombre: "Carlos García", rol: "alumno", activo: true },
       ]; // Inicializamos el array vacío si no hay datos en localStorage
+      // Me falta guardar la lista en local Storage
+      this.guardarEnDisco();
     }
   }
 
@@ -40,10 +42,7 @@ export class CRMController {
 
 
         this.usuariosDelCentro.push(nuevoUsuario);
-        localStorage.setItem(
-          this.CLAVE_STORAGE,
-          JSON.stringify(this.usuariosDelCentro),
-        );
+        this.guardarEnDisco(); // Guardamos los cambios en localStorage
 
         // La operación ha terminado con éxito: resolvemos la promesa
         resolve(true);
@@ -51,13 +50,33 @@ export class CRMController {
     });
   }
 
-  // Métodos: La función de ayer, que estaba en counter, convertida en un método o habilidad de la clase
+public leerTodosAsync(): Promise<Usuario[]> {
+  // Este método devuelve el listado completo de usuarios con un retardo de 2 segundos
+  return new Promise((resolve) => {
+    console.log("[NETWORK]: Recuperando todos los usuarios del servidor escolar...");
+
+    setTimeout(() => {
+      resolve(this.usuariosDelCentro);
+    }, 2000);
+  });
+}
+ /* // Métodos: La función de ayer, que estaba en counter, convertida en un método o habilidad de la clase
   filtrarUsuariosPorRol(rolBuscado: Rol): Usuario[] {
     // Usamos this para referirnos a la propiedad de esta misma clase
     return this.usuariosDelCentro.filter(
       (usuario) => usuario.rol === rolBuscado,
     );
-  }
+  }*/
+    filtrarUsuariosPorRol(rolBuscado: Rol): Promise<Usuario[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+    const usuariosFiltrados = this.usuariosDelCentro.filter(
+      (usuario) => usuario.rol === rolBuscado,
+    );
+    resolve(usuariosFiltrados);
+    }, 2000);
+  });
+}
 
   actualizaVersion(nuevaVersion: string): void {
     this.version = nuevaVersion;
@@ -72,14 +91,12 @@ export class CRMController {
     const idDuplicado = this.usuariosDelCentro.some(
       (user) => user.id === nuevoUsuario.id,
     );
-
     if (idDuplicado) {
       console.error(
         `❌ Error: El usuario con ID [${nuevoUsuario.id}] ya existe en el SchoolCRM.`,
       );
       return; // Cortamos la ejecución para no añadirlo
     }
-
     // 2. Si no está duplicado, lo añadimos de forma segura
     this.usuariosDelCentro.push(nuevoUsuario);
     console.log(`✅ Usuario ${nuevoUsuario.nombre} añadido correctamente.`);
